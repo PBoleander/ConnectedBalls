@@ -2,10 +2,7 @@ package connectedBalls;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
-import java.util.ArrayList;
 
 public class Mobil extends BufferedImage implements Runnable {
 		
@@ -14,8 +11,9 @@ public class Mobil extends BufferedImage implements Runnable {
 	private int x;
 	private int y;
 	private int velocitat;
-	private boolean dinsBany;
+	private Bany meuBany;
 	private Color color;
+	private ControlBanys controlBanys;
 	
 	public Mobil(int x, int y, int direccio, int v, Color c) {
 		super(10, 10, BufferedImage.TYPE_3BYTE_BGR);
@@ -24,10 +22,28 @@ public class Mobil extends BufferedImage implements Runnable {
 		this.direccio = direccio;
 		this.velocitat = v;
 		this.viu = true;
-		this.dinsBany = false;
 		this.color = c;
 		
 		new Thread(this).start();
+	}
+	
+	@Override
+	public void run() {
+		while (viu) {
+			try {
+				moure();
+				if (controlBanys != null) { // per si es connecta i rep mòbils abans de crear controlBanys o no hi ha banys al programa
+					mirarSiIntersectaBany();
+				}
+				if (meuBany != null) {
+					Thread.sleep((int) (1000 * Math.random()));
+				} else {
+					Thread.sleep(10);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public Color getColor() {
@@ -50,8 +66,8 @@ public class Mobil extends BufferedImage implements Runnable {
 		return velocitat;
 	}
 	
-	public synchronized void setDinsBany(boolean dinsBany) {
-		this.dinsBany = dinsBany;
+	public void setControlBanys(ControlBanys cb) {
+		this.controlBanys = cb;
 	}
 	
 	public synchronized void setX(int x) {
@@ -66,25 +82,24 @@ public class Mobil extends BufferedImage implements Runnable {
 		g.setColor(color);
 		g.fillOval(x, y, this.getWidth(), this.getHeight());
 	}
-
-	@Override
-	public void run() {
-		while (viu) {
-			try {
-				moure();
-				if (dinsBany) {
-					Thread.sleep((int) (1000 * Math.random()));
-				} else {
-					Thread.sleep(10);
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 	
 	public void setViu(boolean viu) {
 		this.viu = viu;
+	}
+	
+	private void mirarSiIntersectaBany() {
+		Bany bany = controlBanys.intersectaAmbBany(x, y, this.getWidth(), this.getHeight());
+		if (bany != null) {
+			if (meuBany == null) {
+				bany.entrar();
+				meuBany = bany;
+			}
+		} else {
+			if (meuBany != null) {
+				meuBany.sortir();
+				meuBany = null;
+			}
+		}
 	}
 	
 	private synchronized void moure() {

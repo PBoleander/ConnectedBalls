@@ -16,12 +16,15 @@ public class ConnectedBalls extends JFrame implements Runnable {
 	private ArrayList<Bany> llistaBanys;
 	private ArrayList<Mobil> llistaMobils;
 	private ControlPanel controlPanel;
+	private ControlBanys controlBanys;
 	private RemoteBall remote;
 	private Viewer viewer;
 	
+	private int distanciaEntreBanys;
 	private int frequencia;
 	private int numMaxMobils;
 	private int numMinBanys;
+	private int numBanys;
 	private int numMaxBanys;
 	private int ampleBanys;
 	private int altBanys;
@@ -39,12 +42,18 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		this.setMinimumSize(new Dimension(600, 400));
 		this.setLayout(new GridBagLayout());
 		
+		remote = new RemoteBall(this);
+		ServerConnection server = new ServerConnection(remote);
+		new ClientConnection(remote, server);
+		
 		this.llistaBanys = new ArrayList<>();
 		this.llistaMobils = new ArrayList<>();
+		this.distanciaEntreBanys = 20;
 		this.frequencia = 100;
-		this.numMaxMobils = 2;
-		this.numMinBanys = 5;
-		this.numMaxBanys = 15;
+		this.numMaxMobils = 5;
+		this.numMinBanys = 1;
+		this.numMaxBanys = calculMaxBanys();
+		this.numBanys = (this.numMaxBanys > 4 ? 5 : (this.numMaxBanys + this.numMinBanys) / 2);
 		this.ampleBanys = 20;
 		this.altBanys = 20;
 		this.velocitatMinMobils = 1;
@@ -52,17 +61,12 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		this.ferBanys = false;
 		this.ferMobils = false;
 		
-		remote = new RemoteBall(this);
-		ServerConnection server = new ServerConnection(remote);
-		new ClientConnection(remote, server);
-		
 		this.viewer = new Viewer(llistaBanys, llistaMobils);
 		this.controlPanel = new ControlPanel(this);
-		
 		GridBagConstraints c = new GridBagConstraints();
 		
 		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0.2;
+		c.weightx = 0.0;
 		c.weighty = 1.0;
 		
 		this.add(controlPanel, c);
@@ -81,17 +85,25 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		while (true) {
 			try {
 				while (true) {
-					if (ferBanys) crearBanys();
+					if (ferBanys) {
+						crearBanys();
+						controlBanys = new ControlBanys(llistaBanys);
+					}
 					reinici = false;
 					while (!reinici) {
-						if (ferMobils && llistaMobils.size() < numMaxMobils && (int) (frequencia * Math.random()) == 0) {
-							crearMobil();
+						if (ferMobils &&
+							llistaMobils.size() < numMaxMobils &&
+							(int) (frequencia * Math.random()) == 0) {
+							Mobil m = crearMobil();
+							if (ferBanys) m.setControlBanys(controlBanys);
+							llistaMobils.add(m);
 						}
-						Thread.sleep(10);
 						
 						enviarMobilsForaViewer();
 						eliminarBanysForaViewer(); // per si es redimensiona finestra
 						repaint();
+						
+						Thread.sleep(10);
 					}
 					resetejar();
 					repaint();
@@ -163,6 +175,14 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		return numMaxBanys;
 	}
 
+	public int getNumBanys() {
+		return numBanys;
+	}
+
+	public synchronized void setNumBanys(int numBanys) {
+		this.numBanys = numBanys;
+	}
+
 	public synchronized void setNumMaxBanys(int numMaxBanys) {
 		this.numMaxBanys = numMaxBanys;
 	}
@@ -232,30 +252,36 @@ public class ConnectedBalls extends JFrame implements Runnable {
 			m.setY(0);
 			break;
 		case 2:
-			m.setX(viewer.getWidth());
+			m.setX(viewer.getWidth() - 1);
 			break;
 		case 3:
-			m.setY(viewer.getHeight());
+			m.setY(viewer.getHeight() - 1);
 		}
+		if (ferBanys) m.setControlBanys(controlBanys);
 		llistaMobils.add(m);
 	}
 	
+	private int calculMaxBanys() {
+		// empram el tamany del frame i no del viewer perquè encara no sabem el del viewer
+		int numMaxHoritzontal = this.getWidth() / (this.ampleBanys + this.distanciaEntreBanys);
+		int numMaxVertical = this.getHeight() / (this.altBanys + this.distanciaEntreBanys);
+		
+		return numMaxHoritzontal * numMaxVertical / 20; // dividim per 20 perquè provant és el número que millor va, si fos major no aniria malament
+	}
+	
 	private void crearBanys() {
-		int numBanys = (int) (numMinBanys + (numMaxBanys - numMinBanys + 1) * Math.random());
-		int amplada = ampleBanys;
-		int altura = altBanys;
 		int x, y;
 		for (int i = 0; i < numBanys; i++) {
 			do {
-				x = (int) (50 + (this.getWidth() - 99) * Math.random()); // x entre 50 i width - 50
-				y = (int) (50 + (this.getHeight() - 99) * Math.random()); // y entre 50 i height - 50
-			} while (intersectaAmbAltreBany(x, y, amplada, altura));
+				x = (int) (this.distanciaEntreBanys + (viewer.getWidth() - 2 * this.distanciaEntreBanys + 1 - this.ampleBanys) * Math.random()); // x entre distanciaEntreBanys i width - distanciaEB
+				y = (int) (this.distanciaEntreBanys + (viewer.getHeight() - 2 * this.distanciaEntreBanys + 1 - this.altBanys) * Math.random()); // y entre distanciaEB i height - distanciaEB
+			} while (intersectaAmbBany(x, y, ampleBanys, altBanys, this.distanciaEntreBanys));
 		
-			llistaBanys.add(new Bany(x, y, amplada, altura));
+			llistaBanys.add(new Bany(x, y, ampleBanys, altBanys));
 		}
 	}
 	
-	private void crearMobil() {
+	private Mobil crearMobil() {
 		int x, y;
 		int velocitat = (int) (velocitatMinMobils + (velocitatMaxMobils - velocitatMinMobils + 1) * Math.random());
 		int direccio = (int) (4 * Math.random());
@@ -272,15 +298,15 @@ public class ConnectedBalls extends JFrame implements Runnable {
 			y = 0;
 			break;
 		case 2: // cap a l'esquerra
-			x = this.getWidth() - 1;
+			x = viewer.getWidth() - 1;
 			y = (int) (viewer.getHeight() * Math.random());
 			break;
 		default: // case 3: cap amunt
 			x = (int) (viewer.getWidth() * Math.random());
-			y = this.getHeight() - 1;
+			y = viewer.getHeight() - 1;
 		}
 		
-		llistaMobils.add(new Mobil(x, y, direccio, velocitat, color));
+		return new Mobil(x, y, direccio, velocitat, color);
 	}
 	
 	private void eliminarTotsMobils() {
@@ -290,14 +316,10 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		}
 	}
 	
-	private boolean estaDinsViewer(int x, int y) {
-		return (x >= 0 && x < viewer.getWidth() && y >= 0 && y < viewer.getHeight());
-	}
-	
 	private void eliminarBanysForaViewer() {
 		for (int i = 0; i < llistaBanys.size(); i++) {
 			Bany b = llistaBanys.get(i);
-			if (!estaDinsViewer(b.getX(), b.getY())) {
+			if (!viewer.contePunt(b.getX(), b.getY())) {
 				llistaBanys.remove(b);
 			}
 		}
@@ -311,26 +333,25 @@ public class ConnectedBalls extends JFrame implements Runnable {
 	private void enviarMobilsForaViewer() throws IOException {
 		for (int i = 0; i < llistaMobils.size(); i++) {
 			Mobil m = llistaMobils.get(i);
-			if (!estaDinsViewer(m.getX(), m.getY())) {
+			if (!viewer.contePunt(m.getX(), m.getY())) {
 				if (remote.getSocket() != null) remote.enviarMobil(m);
 				eliminarMobil(m);
 			}
 		}
 	}
 	
-	private boolean intersectaAmbAltreBany(int x, int y, int ample, int alt) {
+	private boolean intersectaAmbBany(int x, int y, int ample, int alt, int distanciaEntreBanys) {
 		for (int i = 0; i < llistaBanys.size(); i++) {
 			Bany b = llistaBanys.get(i);
 			Rectangle bany = new Rectangle(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-			Rectangle candidatBany = new Rectangle(x, y, ample, alt);
-			if (candidatBany.intersects(bany)) return true;
+			Rectangle self = new Rectangle(x - distanciaEntreBanys, y - distanciaEntreBanys, ample + 2 * distanciaEntreBanys, alt + 2 * distanciaEntreBanys);
+			if (self.intersects(bany)) return true;
 		}
 		return false;
 	}
 	
 	private void resetejar() {
 		eliminarTotsMobils();
-		llistaMobils.clear();
 		for (Bany b: llistaBanys) b.sortir(); // per si qualque bany té cua quan s'elimina, els mòbils que esperen no moririen mai
 		llistaBanys.clear();
 	}

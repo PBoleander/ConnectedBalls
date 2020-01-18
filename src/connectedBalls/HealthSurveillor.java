@@ -18,7 +18,7 @@ public class HealthSurveillor implements Runnable {
 			try {
 				if (remote.getSocket() != null) {
 					respostaPing = false;
-					remote.enviarMissatgeSalut();
+					remote.enviarPing();
 					Thread.sleep(500);
 					if (remote.getSocket() != null && !respostaPing) {
 						remote.getSocket().close();

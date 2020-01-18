@@ -58,24 +58,24 @@ public class RemoteBall implements Runnable {
 		out.writeObject(m);
 	}
 	
-	public synchronized void enviarMissatgeSalut() throws IOException {
+	public synchronized void enviarPing() throws IOException {
 		Message m = new Message(0, 0, 0, 0, Color.BLACK);
 		out.writeObject(m);
 	}
 	
-	private synchronized void enviarRespostaSalut() throws IOException {
+	private synchronized void enviarRespostaPing() throws IOException {
 		Message m = new Message(-1, -1, -1, -1, Color.BLACK);
 		out.writeObject(m);
 	}
 	
 	private void rebre() throws ClassNotFoundException, IOException {
 		Message m = (Message) in.readObject();
-		if (m.getVelocitat() > 0) {
+		if (m.getVelocitat() > 0) { // és un mòbil
 			Mobil mobil = new Mobil(m.getX(), m.getY(), m.getDireccio(), m.getVelocitat(), m.getColor());
 			cb.afegirMobil(mobil);
-		} else if (m.getVelocitat() == 0) {
-			enviarRespostaSalut();
-		} else {
+		} else if (m.getVelocitat() == 0) { // és un ping
+			enviarRespostaPing();
+		} else { // és la resposta del ping
 			hs.setRespostaPing(true);
 		}
 	}

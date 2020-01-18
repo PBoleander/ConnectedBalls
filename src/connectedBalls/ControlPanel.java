@@ -25,7 +25,7 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 	private ConnectedBalls mainProgram;
 	
 	private JSlider frequencia;
-	private JSpinner nMaxMobils, nMinBanys, nMaxBanys, ampleBanys, altBanys, velMinMobils, velMaxMobils;
+	private JSpinner nMaxMobils, nBanys, ampleBanys, altBanys, velMinMobils, velMaxMobils;
 	private JCheckBox cbFerBanys, cbFerMobils;
 	private JLabel infoMode, infoSocket;
 
@@ -56,11 +56,8 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 		afegirLabelNou("Nº màxim mòbils", 0, y, label);
 		this.nMaxMobils = afegirSpinnerNou(this.nMaxMobils, mainProgram.getNumMaxMobils(), 1, 50, 1, 1, y++, numeros);
 		
-		afegirLabelNou("Nº mínim banys", 0, y, label);
-		this.nMinBanys = afegirSpinnerNou(this.nMinBanys, mainProgram.getNumMinBanys(), 1, 10, 1, 1, y++, numeros);
-		
-		afegirLabelNou("Nº màxim banys", 0, y, label);
-		this.nMaxBanys = afegirSpinnerNou(this.nMaxBanys, mainProgram.getNumMaxBanys(), 5, 30, 1, 1, y++, numeros);
+		afegirLabelNou("Nº banys", 0, y, label);
+		this.nBanys = afegirSpinnerNou(this.nBanys, mainProgram.getNumBanys(), mainProgram.getNumMinBanys(), mainProgram.getNumMaxBanys(), 1, 1, y++, numeros);
 		
 		afegirLabelNou("Amplada banys", 0, y, label);
 		this.ampleBanys = afegirSpinnerNou(this.ampleBanys, mainProgram.getAmpleBanys(), 20, 50, 5, 1, y++, numeros);
@@ -97,10 +94,8 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource().equals(nMaxMobils)) {
 			mainProgram.setNumMaxMobils((int) nMaxMobils.getValue());
-		} else if (e.getSource().equals(nMinBanys)) {
-			mainProgram.setNumMinBanys((int) nMinBanys.getValue());
-		} else if (e.getSource().equals(nMaxBanys)) {
-			mainProgram.setNumMaxBanys((int) nMaxBanys.getValue());
+		} else if (e.getSource().equals(nBanys)) {
+			mainProgram.setNumBanys((int) nBanys.getValue());
 		} else if (e.getSource().equals(ampleBanys)) {
 			mainProgram.setAmpleBanys((int) ampleBanys.getValue());
 		} else if (e.getSource().equals(altBanys)) {

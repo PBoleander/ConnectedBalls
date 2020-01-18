@@ -26,7 +26,6 @@ public class Bany extends BufferedImage {
 			}
 		}
 		buit = false;
-		notifyAll();
 	}
 	
 	public int getX() {

@@ -41,6 +41,10 @@ public class Viewer extends Canvas implements Runnable {
 		paint(g);
 	}
 	
+	public boolean contePunt(int x, int y) {
+		return (x >= 0 && x < this.getWidth() && y >= 0 && y < this.getHeight());
+	}
+	
 	private BufferedImage ferBorrador() {
 		BufferedImage borrador = (BufferedImage) createImage(this.getWidth(), this.getHeight());
 		Graphics borradorGraphics = borrador.getGraphics();
