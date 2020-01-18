@@ -12,8 +12,7 @@ public class ControlBanys {
 	}
 	
 	public Bany intersectaAmbBany(int x, int y, int ample, int alt) {
-		for (int i = 0; i < llistaBanys.size(); i++) {
-			Bany b = llistaBanys.get(i);
+		for (Bany b: llistaBanys) {
 			Rectangle bany = new Rectangle(b.getX(), b.getY(), b.getWidth(), b.getHeight());
 			Rectangle self = new Rectangle(x, y, ample, alt);
 			if (self.intersects(bany)) return b;

@@ -341,8 +341,7 @@ public class ConnectedBalls extends JFrame implements Runnable {
 	}
 	
 	private boolean intersectaAmbBany(int x, int y, int ample, int alt, int distanciaEntreBanys) {
-		for (int i = 0; i < llistaBanys.size(); i++) {
-			Bany b = llistaBanys.get(i);
+		for (Bany b: llistaBanys) {
 			Rectangle bany = new Rectangle(b.getX(), b.getY(), b.getWidth(), b.getHeight());
 			Rectangle self = new Rectangle(x - distanciaEntreBanys, y - distanciaEntreBanys, ample + 2 * distanciaEntreBanys, alt + 2 * distanciaEntreBanys);
 			if (self.intersects(bany)) return true;

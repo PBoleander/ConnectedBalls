@@ -48,19 +48,16 @@ public class Viewer extends Canvas implements Runnable {
 	private BufferedImage ferBorrador() {
 		BufferedImage borrador = (BufferedImage) createImage(this.getWidth(), this.getHeight());
 		Graphics borradorGraphics = borrador.getGraphics();
-		
-		borradorGraphics.clearRect(0, 0, borrador.getWidth(), borrador.getHeight());
-		
+				
 		if (mobils != null) {
-			for (int i = 0; i < mobils.size(); i++) {
+			for (int i = 0; i < mobils.size(); i++) { // per a evitar ConcurrentModificationException s'ha de fer així el for, no com el dels banys
 				Mobil m = mobils.get(i);
 				m.pintar(borradorGraphics);
 			}
 		}
 		
 		if (banys != null) {
-			for (int i = 0; i < banys.size(); i++) {
-				Bany bany = banys.get(i);
+			for (Bany bany: banys) {
 				bany.pintar(borradorGraphics);
 			}
 		}
