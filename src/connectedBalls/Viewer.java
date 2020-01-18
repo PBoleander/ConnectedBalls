@@ -50,14 +50,15 @@ public class Viewer extends Canvas implements Runnable {
 		Graphics borradorGraphics = borrador.getGraphics();
 				
 		if (mobils != null) {
-			for (int i = 0; i < mobils.size(); i++) { // per a evitar ConcurrentModificationException s'ha de fer així el for, no com el dels banys
+			for (int i = 0; i < mobils.size(); i++) { // per a evitar ConcurrentModificationException s'ha de fer així el for
 				Mobil m = mobils.get(i);
 				m.pintar(borradorGraphics);
 			}
 		}
 		
 		if (banys != null) {
-			for (Bany bany: banys) {
+			for (int i = 0; i < banys.size(); i++) {
+				Bany bany = banys.get(i);
 				bany.pintar(borradorGraphics);
 			}
 		}

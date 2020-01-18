@@ -52,8 +52,8 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		this.frequencia = 100;
 		this.numMaxMobils = 5;
 		this.numMinBanys = 1;
-		this.numMaxBanys = calculMaxBanys();
-		this.numBanys = (this.numMaxBanys > 4 ? 5 : (this.numMaxBanys + this.numMinBanys) / 2);
+		this.numMaxBanys = 30;
+		this.numBanys = 5;
 		this.ampleBanys = 20;
 		this.altBanys = 20;
 		this.velocitatMinMobils = 1;
@@ -259,14 +259,6 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		}
 		if (ferBanys) m.setControlBanys(controlBanys);
 		llistaMobils.add(m);
-	}
-	
-	private int calculMaxBanys() {
-		// empram el tamany del frame i no del viewer perquè encara no sabem el del viewer
-		int numMaxHoritzontal = this.getWidth() / (this.ampleBanys + this.distanciaEntreBanys);
-		int numMaxVertical = this.getHeight() / (this.altBanys + this.distanciaEntreBanys);
-		
-		return numMaxHoritzontal * numMaxVertical / 20; // dividim per 20 perquè provant és el número que millor va, si fos major no aniria malament
 	}
 	
 	private void crearBanys() {
