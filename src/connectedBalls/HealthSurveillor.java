@@ -13,7 +13,7 @@ public class HealthSurveillor implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void run() { // cada mig segon envia un ping i espera mig segon més per rebre la resposta; si algo falla, talla la connexió
 		while (true) {
 			try {
 				if (remote.getSocket() != null) {

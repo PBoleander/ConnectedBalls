@@ -16,9 +16,9 @@ public class ServerConnection implements Runnable {
 	private ObjectOutputStream out;
 	private ObjectInputStream in;
 	
-	public ServerConnection(RemoteBall rb) {
+	public ServerConnection(RemoteBall rb, int port) {
 		remote = rb;
-		port = 5000;
+		this.port = port;
 		portFixed = false;
 		new Thread(this).start();
 	}
@@ -37,16 +37,16 @@ public class ServerConnection implements Runnable {
 		while (true) {
 			try {
 				serverSocket = new ServerSocket(port);
-				portFixed = true;
+				portFixed = true; // si arriba aquí és perquè el port no està utilitzat per una altra pantalla (programa)
 				while (true) {
-					socket = serverSocket.accept();
+					socket = serverSocket.accept(); // accepta una connexió feta per un client (d'una altra pantalla)
 					out = new ObjectOutputStream(socket.getOutputStream());
 					in = new ObjectInputStream(socket.getInputStream());
-					if (remote.getSocket() == null)
+					if (remote.getSocket() == null) // si la connexió no s'ha establert abans, l'estableix
 						remote.setSocket(socket, out, in);
 				}
-			} catch (BindException b) {
-				port = 5001;
+			} catch (BindException b) { // si el port al qual vol escoltar el servidor està ocupat, canvia el port
+				port++;
 			} catch (IOException e) { // si falla crear serversocket o acceptar
 				try {
 					if (serverSocket != null) {

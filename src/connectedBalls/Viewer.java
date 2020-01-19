@@ -20,7 +20,7 @@ public class Viewer extends Canvas implements Runnable {
 	}
 
 	@Override
-	public void run() {
+	public void run() { // només repinta
 		while (true) {
 			try {
 				repaint();
@@ -41,11 +41,11 @@ public class Viewer extends Canvas implements Runnable {
 		paint(g);
 	}
 	
-	public boolean contePunt(int x, int y) {
+	public boolean contePunt(int x, int y) { // indica si coordenada està dins viewer
 		return (x >= 0 && x < this.getWidth() && y >= 0 && y < this.getHeight());
 	}
 	
-	private BufferedImage ferBorrador() {
+	private BufferedImage ferBorrador() { // fa el borrador per no tenir flickering (doble buffer)
 		BufferedImage borrador = (BufferedImage) createImage(this.getWidth(), this.getHeight());
 		Graphics borradorGraphics = borrador.getGraphics();
 				
@@ -57,7 +57,7 @@ public class Viewer extends Canvas implements Runnable {
 		}
 		
 		if (banys != null) {
-			for (int i = 0; i < banys.size(); i++) {
+			for (int i = 0; i < banys.size(); i++) { // aquí també passa quan crees els banys, un pic creats ja no passa
 				Bany bany = banys.get(i);
 				bany.pintar(borradorGraphics);
 			}

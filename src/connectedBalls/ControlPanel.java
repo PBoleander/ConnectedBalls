@@ -86,7 +86,6 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 	public void mouseReleased(MouseEvent e) {
 		if (e.getSource().equals(frequencia)) {
 			mainProgram.setFrequencia(frequencia.getValue());
-			mainProgram.setReinici(true);
 		}
 	}
 	
@@ -96,16 +95,18 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 			mainProgram.setNumMaxMobils((int) nMaxMobils.getValue());
 		} else if (e.getSource().equals(nBanys)) {
 			mainProgram.setNumBanys((int) nBanys.getValue());
+			mainProgram.setReinici(true);
 		} else if (e.getSource().equals(ampleBanys)) {
 			mainProgram.setAmpleBanys((int) ampleBanys.getValue());
+			mainProgram.setReinici(true);
 		} else if (e.getSource().equals(altBanys)) {
 			mainProgram.setAltBanys((int) altBanys.getValue());
+			mainProgram.setReinici(true);
 		} else if (e.getSource().equals(velMaxMobils)) {
 			mainProgram.setVelocitatMaxMobils((int) velMaxMobils.getValue());
 		} else if (e.getSource().equals(velMinMobils)) {
 			mainProgram.setVelocitatMinMobils((int) velMinMobils.getValue());
 		}
-		mainProgram.setReinici(true);
 	}
 	
 	@Override
@@ -175,19 +176,13 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 	}
 	
 	private int calculMode(int localPort, int port) {
-		switch (localPort) {
-		case 5000:
-			return 1;
-		case 5001:
-			return 2;
-		}
+		int port1 = mainProgram.getPort();
 		
-		switch (port) {
-		case 5000:
-			return 2;
-		case 5001:
-			return 1;
-		}
+		if (localPort == port1) return 1;
+		else if (localPort == port1 + 1) return 2;
+		
+		if (port == port1) return 2;
+		else if (port == port1 + 1) return 1;
 		
 		return 0; // aquí no hi ha d'arribar
 	}

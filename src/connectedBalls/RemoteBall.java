@@ -25,7 +25,7 @@ public class RemoteBall implements Runnable {
 	}
 	
 	@Override
-	public void run() {
+	public void run() { // només s'encarrega d'escoltar mem si hi ha missatges
 		while (true) {
 			try {
 				if (socket != null) {
@@ -53,6 +53,7 @@ public class RemoteBall implements Runnable {
 		in = i;
 	}
 
+	// Mètodes per a enviar els distints tipus de sortides (mòbils, pings o resposta al ping)
 	public synchronized void enviarMobil(Mobil mobil) throws IOException {
 		Message m = new Message(mobil.getX(), mobil.getY(), mobil.getDireccio(), mobil.getVelocitat(), mobil.getColor());
 		out.writeObject(m);
@@ -68,15 +69,17 @@ public class RemoteBall implements Runnable {
 		out.writeObject(m);
 	}
 	
+	// Mètode que rep els distints tipus d'entrades (mòbils, pings o respostes al ping)
 	private void rebre() throws ClassNotFoundException, IOException {
 		Message m = (Message) in.readObject();
-		if (m.getVelocitat() > 0) { // és un mòbil
+		int vel = m.getVelocitat();
+		if (vel > 0) { // és un mòbil
 			Mobil mobil = new Mobil(m.getX(), m.getY(), m.getDireccio(), m.getVelocitat(), m.getColor());
 			cb.afegirMobil(mobil);
-		} else if (m.getVelocitat() == 0) { // és un ping
+		} else if (vel == 0) { // és un ping
 			enviarRespostaPing();
-		} else { // és la resposta del ping
+		} else if (vel == -1) { // és la resposta del ping
 			hs.setRespostaPing(true);
-		}
+		} // else (aquí no hi ha d'arribar) -> no fer res -> el healthsurveillor tancarà la connexió perquè la resposta del ping no li arribarà
 	}
 }

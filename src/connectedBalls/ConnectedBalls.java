@@ -13,6 +13,9 @@ public class ConnectedBalls extends JFrame implements Runnable {
 
 	private static final long serialVersionUID = 1L;
 	
+	private final int port = 5000;
+	private final String HOST = "localhost"; 
+	
 	private ArrayList<Bany> llistaBanys;
 	private ArrayList<Mobil> llistaMobils;
 	private ControlPanel controlPanel;
@@ -43,8 +46,8 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		this.setLayout(new GridBagLayout());
 		
 		remote = new RemoteBall(this);
-		ServerConnection server = new ServerConnection(remote);
-		new ClientConnection(remote, server);
+		ServerConnection server = new ServerConnection(remote, port);
+		new ClientConnection(remote, server, HOST, port);
 		
 		this.llistaBanys = new ArrayList<>();
 		this.llistaMobils = new ArrayList<>();
@@ -81,19 +84,20 @@ public class ConnectedBalls extends JFrame implements Runnable {
 	}
 	
 	@Override
-	public void run() {
+	public void run() { // Crea els banys i/o els mòbils (si ho ha de fer) i envia els mòbils que surten de la pantalla
 		while (true) {
 			try {
 				while (true) {
 					if (ferBanys) {
 						crearBanys();
-						controlBanys = new ControlBanys(llistaBanys);
+						controlBanys = new ControlBanys(llistaBanys); // objecte que compartiran tots els mòbils del programa per identificar banys
 					}
 					reinici = false;
 					while (!reinici) {
 						if (ferMobils &&
 							llistaMobils.size() < numMaxMobils &&
 							(int) (frequencia * Math.random()) == 0) {
+							
 							Mobil m = crearMobil();
 							if (ferBanys) m.setControlBanys(controlBanys);
 							llistaMobils.add(m);
@@ -101,12 +105,10 @@ public class ConnectedBalls extends JFrame implements Runnable {
 						
 						enviarMobilsForaViewer();
 						eliminarBanysForaViewer(); // per si es redimensiona finestra
-						repaint();
 						
 						Thread.sleep(10);
 					}
 					resetejar();
-					repaint();
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -122,129 +124,9 @@ public class ConnectedBalls extends JFrame implements Runnable {
 			}
 		}
 	}
-	
-	public synchronized ArrayList<Bany> getLlistaBanys() {
-		return llistaBanys;
-	}
 
-	public synchronized void setLlistaBanys(ArrayList<Bany> llistaBanys) {
-		this.llistaBanys = llistaBanys;
-	}
-
-	public synchronized ArrayList<Mobil> getLlistaMobils() {
-		return llistaMobils;
-	}
-
-	public synchronized void setLlistaMobils(ArrayList<Mobil> llistaMobils) {
-		this.llistaMobils = llistaMobils;
-	}
-
-	public synchronized RemoteBall getRemote() {
-		return remote;
-	}
-
-	public synchronized void setRemote(RemoteBall remote) {
-		this.remote = remote;
-	}
-
-	public synchronized int getFrequencia() {
-		return frequencia;
-	}
-
-	public synchronized void setFrequencia(int frequencia) {
-		this.frequencia = frequencia;
-	}
-
-	public synchronized int getNumMaxMobils() {
-		return numMaxMobils;
-	}
-
-	public synchronized void setNumMaxMobils(int numMaxMobils) {
-		this.numMaxMobils = numMaxMobils;
-	}
-
-	public synchronized int getNumMinBanys() {
-		return numMinBanys;
-	}
-
-	public synchronized void setNumMinBanys(int numMinBanys) {
-		this.numMinBanys = numMinBanys;
-	}
-
-	public synchronized int getNumMaxBanys() {
-		return numMaxBanys;
-	}
-
-	public int getNumBanys() {
-		return numBanys;
-	}
-
-	public synchronized void setNumBanys(int numBanys) {
-		this.numBanys = numBanys;
-	}
-
-	public synchronized void setNumMaxBanys(int numMaxBanys) {
-		this.numMaxBanys = numMaxBanys;
-	}
-
-	public synchronized int getAmpleBanys() {
-		return ampleBanys;
-	}
-
-	public synchronized void setAmpleBanys(int ampleBanys) {
-		this.ampleBanys = ampleBanys;
-	}
-
-	public synchronized int getAltBanys() {
-		return altBanys;
-	}
-
-	public synchronized void setAltBanys(int altBanys) {
-		this.altBanys = altBanys;
-	}
-
-	public synchronized int getVelocitatMinMobils() {
-		return velocitatMinMobils;
-	}
-
-	public synchronized void setVelocitatMinMobils(int velocitatMinMobils) {
-		this.velocitatMinMobils = velocitatMinMobils;
-	}
-
-	public synchronized int getVelocitatMaxMobils() {
-		return velocitatMaxMobils;
-	}
-
-	public synchronized void setVelocitatMaxMobils(int velocitatMaxMobils) {
-		this.velocitatMaxMobils = velocitatMaxMobils;
-	}
-
-	public synchronized boolean isReinici() {
-		return reinici;
-	}
-
-	public synchronized void setReinici(boolean reinici) {
-		this.reinici = reinici;
-	}
-
-	public synchronized boolean isFerBanys() {
-		return ferBanys;
-	}
-
-	public synchronized void setFerBanys(boolean ferBanys) {
-		this.ferBanys = ferBanys;
-	}
-
-	public synchronized boolean isFerMobils() {
-		return ferMobils;
-	}
-
-	public synchronized void setFerMobils(boolean ferMobils) {
-		this.ferMobils = ferMobils;
-	}
-
-	public void afegirMobil(Mobil m) {
-		switch (m.getDireccio()) {
+	public void afegirMobil(Mobil m) { // afegeix el mòbil rebut de l'altre finestra al programa
+		switch (m.getDireccio()) { // reseteja les coordenades
 		case 0:
 			m.setX(0);
 			break;
@@ -257,7 +139,7 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		case 3:
 			m.setY(viewer.getHeight() - 1);
 		}
-		if (ferBanys) m.setControlBanys(controlBanys);
+		if (ferBanys) m.setControlBanys(controlBanys); // passa els banys d'aquesta finestra al mòbil rebut
 		llistaMobils.add(m);
 	}
 	
@@ -322,7 +204,7 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		llistaMobils.remove(m);
 	}
 	
-	private void enviarMobilsForaViewer() throws IOException {
+	private void enviarMobilsForaViewer() throws IOException { // envia a l'altra finestra (si hi és)
 		for (int i = 0; i < llistaMobils.size(); i++) {
 			Mobil m = llistaMobils.get(i);
 			if (!viewer.contePunt(m.getX(), m.getY())) {
@@ -332,7 +214,7 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		}
 	}
 	
-	private boolean intersectaAmbBany(int x, int y, int ample, int alt, int distanciaEntreBanys) {
+	private boolean intersectaAmbBany(int x, int y, int ample, int alt, int distanciaEntreBanys) { // indica si regió intersecta amb algun bany
 		for (Bany b: llistaBanys) {
 			Rectangle bany = new Rectangle(b.getX(), b.getY(), b.getWidth(), b.getHeight());
 			Rectangle self = new Rectangle(x - distanciaEntreBanys, y - distanciaEntreBanys, ample + 2 * distanciaEntreBanys, alt + 2 * distanciaEntreBanys);
@@ -341,12 +223,107 @@ public class ConnectedBalls extends JFrame implements Runnable {
 		return false;
 	}
 	
-	private void resetejar() {
+	private void resetejar() { // neteja el programa
 		eliminarTotsMobils();
 		for (Bany b: llistaBanys) b.sortir(); // per si qualque bany té cua quan s'elimina, els mòbils que esperen no moririen mai
 		llistaBanys.clear();
 	}
+	
+	// GETTERS i SETTERS
 
+	public RemoteBall getRemote() {
+		return remote;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public int getFrequencia() {
+		return frequencia;
+	}
+
+	public void setFrequencia(int frequencia) {
+		this.frequencia = frequencia;
+	}
+
+	public int getNumMaxMobils() {
+		return numMaxMobils;
+	}
+
+	public void setNumMaxMobils(int numMaxMobils) {
+		this.numMaxMobils = numMaxMobils;
+	}
+
+	public int getNumMinBanys() {
+		return numMinBanys;
+	}
+
+	public int getNumMaxBanys() {
+		return numMaxBanys;
+	}
+
+	public int getNumBanys() {
+		return numBanys;
+	}
+
+	public void setNumBanys(int numBanys) {
+		this.numBanys = numBanys;
+	}
+
+	public int getAmpleBanys() {
+		return ampleBanys;
+	}
+
+	public void setAmpleBanys(int ampleBanys) {
+		this.ampleBanys = ampleBanys;
+	}
+
+	public int getAltBanys() {
+		return altBanys;
+	}
+
+	public void setAltBanys(int altBanys) {
+		this.altBanys = altBanys;
+	}
+
+	public int getVelocitatMinMobils() {
+		return velocitatMinMobils;
+	}
+
+	public void setVelocitatMinMobils(int velocitatMinMobils) {
+		this.velocitatMinMobils = velocitatMinMobils;
+	}
+
+	public int getVelocitatMaxMobils() {
+		return velocitatMaxMobils;
+	}
+
+	public void setVelocitatMaxMobils(int velocitatMaxMobils) {
+		this.velocitatMaxMobils = velocitatMaxMobils;
+	}
+
+	public void setReinici(boolean reinici) {
+		this.reinici = reinici;
+	}
+
+	public boolean isFerBanys() {
+		return ferBanys;
+	}
+
+	public void setFerBanys(boolean ferBanys) {
+		this.ferBanys = ferBanys;
+	}
+
+	public boolean isFerMobils() {
+		return ferMobils;
+	}
+
+	public void setFerMobils(boolean ferMobils) {
+		this.ferMobils = ferMobils;
+	}
+
+	// MAIN
 	public static void main(String[] args) {
 		new ConnectedBalls();
 	}
