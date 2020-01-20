@@ -8,6 +8,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.Socket;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -196,12 +197,13 @@ public class ControlPanel extends JPanel implements MouseListener, ChangeListene
 	}
 
 	@Override
-	public void run() {
+	public void run() { // escriu la connexió establerta
+		Socket socket;
 		while (true) {
-			RemoteBall remote = mainProgram.getRemote();
-			if (remote.getSocket() != null) {
-				int localPort = remote.getSocket().getLocalPort();
-				int port = remote.getSocket().getPort();
+			socket = mainProgram.getRemote().getSocket();
+			if (socket != null) {
+				int localPort = socket.getLocalPort();
+				int port = socket.getPort();
 				infoMode.setText("Connectat com a mode " + calculMode(localPort, port));
 				infoSocket.setText("Port local: " + localPort + " - port: " + port);
 			} else {
